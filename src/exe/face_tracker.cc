@@ -38,7 +38,8 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///////////////////////////////////////////////////////////////////////////////
 #include <FaceTracker/Tracker.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
 #include <iostream>
 //=============================================================================
 void Draw(cv::Mat &image,cv::Mat &shape,cv::Mat &con,cv::Mat &tri,cv::Mat &visi)
@@ -174,7 +175,7 @@ int main(int argc, const char** argv)
   
   //initialize camera and display window
   cv::Mat frame,gray,im; double fps=0; char sss[256]; std::string text; 
-  CvCapture* camera = cvCreateCameraCapture(CV_CAP_ANY); if(!camera)return -1;
+  cv::VideoCapture camera(CV_CAP_ANY); if(!camera.isOpened())return -1;
   int64 t1,t0 = cvGetTickCount(); int fnum=0;
   cvNamedWindow("Face Tracker",1);
   std::cout << "Hot keys: "        << std::endl
@@ -185,7 +186,7 @@ int main(int argc, const char** argv)
   bool failed = true;
   while(1){ 
     //grab image, resize and flip
-    IplImage* I = cvQueryFrame(camera); if(!I)continue; frame = I;
+    camera.read(frame); if(frame.empty())continue; 
     if(scale == 1)im = frame; 
     else cv::resize(frame,im,cv::Size(scale*frame.cols,scale*frame.rows));
     cv::flip(im,im,1); cv::cvtColor(im,gray,CV_BGR2GRAY);
@@ -211,7 +212,7 @@ int main(int argc, const char** argv)
 		  CV_FONT_HERSHEY_SIMPLEX,0.5,CV_RGB(255,255,255));
     }
     //show image and check for user input
-    imshow("Face Tracker",im); 
+	cv::imshow("Face Tracker",im); 
     int c = cvWaitKey(10);
     if(c == 27)break; else if(char(c) == 'd')model.FrameReset();
   }return 0;
